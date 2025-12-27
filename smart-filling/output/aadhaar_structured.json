@@ -1,6 +1,8 @@
 {
-    "name": null,
-    "dob": null,
-    "aadhaar_number": null,
-    "gender": null
+    "name": "Malleeshwar",
+    "dob": "13/03/2006",
+    "gender": "Male",
+    "aadhaar_number": "5876 6107 2924",
+    "address": "S/O: Vijayakumar, 282, kutthampatti, Sanniyasipatti, Erode Tamil Nadu, 638311",
+    "phone_number": "9942694537"
 }

@@ -1,123 +1,173 @@
-import os
-import json
-import re
-from pdf2image import convert_from_path
 import easyocr
+import cv2
+import os
+import re
+import json
 
-# ---------------- INITIAL SETUP ----------------
-reader = easyocr.Reader(['en'])
-file_path = "data/trial/eg_aadhar_kani.jpeg"  # replace with your document
-output_dir = "output"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+output_dir = os.path.join(BASE_DIR, "output")
 os.makedirs(output_dir, exist_ok=True)
 
-# ---------------- OCR FUNCTION ----------------
-def process_image(img_path):
-    results = reader.readtext(img_path)
-    return [res[1].strip() for res in results]
 
-# ---------------- GENERIC FIELD EXTRACTION ----------------
-def extract_generic_fields(text_lines):
+reader = easyocr.Reader(['en'], gpu=False)
+
+def process_image(image_path):
+    # Check if file exists
+    if not os.path.exists(image_path):
+        raise FileNotFoundError(f"Image not found at path: {image_path}")
+
+    img = cv2.imread(image_path)
+
+    if img is None:
+        raise ValueError("Image exists but OpenCV cannot read it. Check format.")
+
+    results = reader.readtext(img)
+    return [text for (_, text, _) in results]
+
+def extract_aadhaar_fields(text_lines):
+    import re
+
     data = {
         "name": None,
-        "date": None,        # DOB / Issue Date
+        "dob": None,
         "gender": None,
-        "id_number": None,
-        "document_type": None
+        "aadhaar_number": None,
+        "address": None,
+        "phone_number": None
     }
 
+    cleaned = [line.strip() for line in text_lines if len(line.strip()) > 2]
+
     ignore_words = [
-        "GOVERNMENT", "INDIA", "REPUBLIC", "UNIQUE",
-        "IDENTIFICATION", "AUTHORITY", "ELECTION",
-        "COMMISSION", "CERTIFICATE", "AADHAAR", "BIRTH",
-        "COMMUNITY", "VOTER"
+        "GOVERNMENT", "INDIA", "UNIQUE", "IDENTIFICATION",
+        "AUTHORITY", "DOB", "MALE", "FEMALE", "VID",
+        "ENROLMENT", "SIGNATURE", "AADHAAR", "S/O", "D/O", "W/O"
     ]
-
-    # ---------- PREPROCESS LINES ----------
-    clean_lines = []
-    for line in text_lines:
-        clean_line = line.strip().replace('O', '0').replace('I','1').replace('l','1').replace('|','1')
-        clean_lines.append(clean_line)
-
-    # ---------- DETECT FIELDS ----------
-    possible_names = []
-    for line in clean_lines:
+# ---------------- Aadhaar Number (FIXED) ----------------
+    for i, line in enumerate(cleaned):
         upper = line.upper()
 
-        # Document Type
-        if "AADHAAR" in upper:
-            data["document_type"] = "Aadhaar"
-        elif "ELECTION" in upper or "VOTER" in upper:
-            data["document_type"] = "Election ID"
-        elif "BIRTH" in upper:
-            data["document_type"] = "Birth Certificate"
-        elif "COMMUNITY" in upper or "CASTE" in upper:
-            data["document_type"] = "Community Certificate"
+        # Skip VID lines
+        if "VID" in upper:
+            continue
 
-        # Gender
-        gender = line.replace(" ", "").lower()
-        if gender in ["male", "female", "other"]:
-            data["gender"] = gender.capitalize()
+        # Aadhaar pattern
+        match = re.search(r"\b\d{4}\s\d{4}\s\d{4}\b", line)
+        if match:
+            # Prefer Aadhaar mentioned near keyword
+            if "AADHAAR" in upper or "AADHAAR NO" in upper:
+                data["aadhaar_number"] = match.group()
+                break
 
-        # Date (DOB / Issue Date)
-        date_match = re.search(r'(\d{2}[\/\-]\d{2}[\/\-]\d{4})', line)
-        if date_match and not data["date"]:
-            data["date"] = date_match.group()
+            # Otherwise pick first valid Aadhaar
+            if data["aadhaar_number"] is None:
+                data["aadhaar_number"] = match.group()
 
-        # ID Number (Aadhaar or generic numbers)
-        id_candidate = line.replace(" ", "")
-        if re.fullmatch(r'\d{12}', id_candidate):  # Aadhaar 12 digits
-            data["id_number"] = f"{id_candidate[:4]} {id_candidate[4:8]} {id_candidate[8:]}"
-        elif re.fullmatch(r'[A-Z]{3}\d{7}', id_candidate):  # Voter ID
-            data["id_number"] = id_candidate
-        elif re.fullmatch(r'\d{6,12}', id_candidate) and not data["id_number"]:
-            data["id_number"] = id_candidate
 
-        # Name (possible)
-        if line.isupper() and line.replace(" ", "").isalpha():
+    # -------- DOB --------
+    for line in cleaned:
+        dob_match = re.search(r"\b\d{2}/\d{2}/\d{4}\b", line)
+        if dob_match:
+            data["dob"] = dob_match.group()
+
+    # -------- Gender --------
+    for line in cleaned:
+        upper = line.upper()
+        if "MALE" in upper:
+            data["gender"] = "Male"
+        elif "FEMALE" in upper:
+            data["gender"] = "Female"
+
+    # -------- Name (SMART LOGIC) --------
+    for i, line in enumerate(cleaned):
+        upper = line.upper()
+
+        # skip unwanted lines
+        if any(word in upper for word in ignore_words):
+            continue
+
+        # alphabet-only names
+        if line.replace(" ", "").isalpha():
             words = line.split()
-            if 1 <= len(words) <= 3 and not any(word in ignore_words for word in words):
-                possible_names.append(line)
+            if 1 <= len(words) <= 4:
+                # name usually appears before DOB
+                if i + 1 < len(cleaned) and "DOB" in cleaned[i + 1].upper():
+                    data["name"] = line
+                    break
 
-    # Pick the last suitable name (usually below title)
-    if possible_names:
-        data["name"] = possible_names[-1]
+                # or standalone name
+                if data["name"] is None:
+                    data["name"] = line
+    # ---------------- ADDRESS EXTRACTION (NAME → PIN BASED) ----------------
+    address_lines = []
+    name_index = -1
+
+    # find name index
+    for i, line in enumerate(cleaned):
+        if line.strip().lower() == data["name"].lower():
+            name_index = i
+            break
+
+    # collect address after name until PIN
+    if name_index != -1:
+        for line in cleaned[name_index + 1:]:
+            # skip relations
+            if re.search(r"\bS/O\b|\bD/O\b|\bW/O\b", line, re.I):
+                address_lines.append(line)
+                continue
+
+            address_lines.append(line)
+
+            # stop at PIN
+            if re.search(r"\b\d{6}\b", line):
+                break
+
+    # clean noise
+    address_lines = [
+        l for l in address_lines
+        if not re.search(r"signature|aadhaar|vid|government", l, re.I)
+    ]
+
+    if address_lines:
+        data["address"] = ", ".join(address_lines)
+
+    # ---------------- PHONE NUMBER EXTRACTION ----------------
+    for line in cleaned:
+        phone_match = re.search(r"\b[6-9]\d{9}\b", line)
+        if phone_match:
+            data["phone_number"] = phone_match.group()
+            break
 
     return data
 
-# ---------------- MAIN EXECUTION ----------------
-all_text = []
-from PIL import Image, ImageFilter
+if __name__ == "__main__":
 
-if file_path.lower().endswith(".pdf"):
-    # Convert PDF to high-res images
-    pages = convert_from_path(file_path, dpi=400)  # High DPI for better OCR
+    image_path = "data/trial/eg_aadhar_malli_page-0001.jpg"
 
-    for i, page in enumerate(pages):
-        # Convert to grayscale
-        page = page.convert('L')
-        # Sharpen the image
-        page = page.filter(ImageFilter.SHARPEN)
-        
-        # Save processed image
-        img_path = os.path.join(output_dir, f"page_{i+1}.jpg")
-        page.save(img_path, "JPEG")
-        
-        # Run OCR on processed image
-        all_text.extend(process_image(img_path))
+    print("📷 Reading image from:", image_path)
+    print("📂 Exists?", os.path.exists(image_path))
 
-else:
-    all_text.extend(process_image(file_path))
+    extracted_text = process_image(image_path)
 
-# Save raw OCR text
-with open(os.path.join(output_dir, "ocr_raw.json"), "w", encoding="utf-8") as f:
-    json.dump(all_text, f, indent=4, ensure_ascii=False)
+    print("\n--- OCR TEXT ---")
+    for line in extracted_text:
+        print(line)
 
-# Extract structured fields
-structured_data = extract_generic_fields(all_text)
+    structured = extract_aadhaar_fields(extracted_text)
 
-with open(os.path.join(output_dir, "structured_output.json"), "w", encoding="utf-8") as f:
-    json.dump(structured_data, f, indent=4, ensure_ascii=False)
+    print("\n--- STRUCTURED DATA ---")
+    print(structured)
 
-print("✅ OCR completed")
-print("✅ Structured data saved")
-print(structured_data)
+    # -------- SAVE RAW OCR TEXT --------
+    ocr_path = os.path.join(output_dir, "ocr_raw.json")
+    with open(ocr_path, "w", encoding="utf-8") as f:
+        json.dump(extracted_text, f, indent=4, ensure_ascii=False)
+
+    # -------- SAVE STRUCTURED AADHAAR DATA --------
+    structured_path = os.path.join(output_dir, "aadhaar_structured.json")
+    with open(structured_path, "w", encoding="utf-8") as f:
+        json.dump(structured, f, indent=4, ensure_ascii=False)
+
+    print("\n💾 Files saved successfully:")
+    print(" -", ocr_path)
+    print(" -", structured_path)
