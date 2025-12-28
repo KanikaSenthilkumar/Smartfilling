@@ -1,0 +1,19 @@
+{
+  "name": {
+    "type": "string",
+    "format": "UPPERCASE"
+  },
+  "dob": {
+    "type": "string",
+    "format": "DD/MM/YYYY"
+  },
+  "gender": {
+    "type": "string",
+    "allowed": ["Male", "Female", "Other"]
+  },
+  "aadhaar_number": {
+    "type": "string",
+    "format": "XXXX XXXX XXXX"
+  },
+  "source_document": "aadhaar"
+}
