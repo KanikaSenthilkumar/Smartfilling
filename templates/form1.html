@@ -1,0 +1,80 @@
+<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/form.css">
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Form 1 - Smart Filling</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <img src="/static/logo.png" class="logo" alt="Logo">
+            <div class="header-text">
+                <h1>AI e-Seva Smart Form Filling</h1>
+                <p>Form 1 – Personal Information</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="form-page-container">
+
+        <!-- Form Info -->
+        <h2>Form 1 – Personal Information</h2>
+        <p class="hint-text">
+            Upload documents or provide voice input to auto-fill this form.
+        </p>
+
+        <!-- Required Documents -->
+        <div class="section">
+            <h3>Required Documents (Optional)</h3>
+            <ul>
+                <li>Aadhaar Card</li>
+                <li>PAN Card</li>
+            </ul>
+            <p class="small-text">
+                If documents are not available, you may use voice input.
+            </p>
+        </div>
+
+        <!-- Input Section -->
+        <div class="section">
+            <h3>Provide Input</h3>
+
+            <label><b>Upload Document</b></label><br><br>
+            <input type="file"><br><br>
+
+            <p><b>OR</b></p>
+
+            <button class="voice-btn">🎤 Use Voice Input</button>
+        </div>
+
+        <!-- Form Preview -->
+        <div class="section">
+            <h3>Form Preview (Auto-filled by AI)</h3>
+
+            <label>Name</label><br>
+            <input type="text" placeholder="Will be auto-filled"><br><br>
+
+            <label>Date of Birth</label><br>
+            <input type="text" placeholder="Will be auto-filled"><br><br>
+
+            <label>Gender</label><br>
+            <input type="text" placeholder="Will be auto-filled"><br><br>
+
+            <label>Address</label><br>
+            <input type="text" placeholder="Will be auto-filled"><br><br>
+        </div>
+
+        <!-- Action -->
+        <div class="section">
+            <button class="process-btn">Process with AI</button>
+        </div>
+
+    </div>
+
+</body>
+</html>
