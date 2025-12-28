@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Form 2 - Aadhaar Service</title>
+
+    <!-- Global styles -->
+    <link rel="stylesheet" href="/static/style.css">
+
+    <!-- Form page styles -->
+    <link rel="stylesheet" href="/static/form.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <img src="/static/logo.png" class="logo" alt="Logo">
+            <div class="header-text">
+                <h1>AI e-Seva Smart Form Filling</h1>
+                <p>Form 2 – Aadhaar Enrolment / Update</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="form-page-container">
+
+        <!-- Title -->
+        <h2>Form 2 – Aadhaar Enrolment / Update</h2>
+        <p class="hint-text">
+            Upload documents or provide voice input to auto-fill the Aadhaar form using AI.
+        </p>
+
+        <!-- Required Documents -->
+        <div class="section">
+            <h3>Required Documents (Optional)</h3>
+            <ul>
+                <li>Proof of Identity (POI)</li>
+                <li>Proof of Address (POA)</li>
+                <li>Proof of Date of Birth (PDB)</li>
+            </ul>
+            <p class="small-text">
+                If documents are not available, you may provide details using voice input.
+            </p>
+        </div>
+
+        <!-- Input Options -->
+        <div class="section">
+            <h3>Provide Input</h3>
+
+            <label><b>Upload Document</b></label><br><br>
+            <input type="file"><br><br>
+
+            <p><b>OR</b></p>
+
+            <button class="voice-btn" type="button">
+                🎤 Use Voice Input
+            </button>
+        </div>
+
+        <!-- Aadhaar Form Preview -->
+        <div class="section">
+            <h3>Aadhaar Form Preview</h3>
+
+            <iframe
+                src="/static/forms/aadhaar_filled.pdf"
+                width="100%"
+                height="600"
+                frameborder="0">
+            </iframe>
+
+            <p class="small-text">
+                This official Aadhaar form will be auto-filled using AI and can be reviewed before download.
+            </p>
+        </div>
+
+        <!-- Action -->
+        <div class="section">
+            <button class="process-btn" type="button">
+                Auto-fill Aadhaar Form using AI
+            </button>
+        </div>
+
+    </div>
+
+</body>
+</html>
+
+
+
