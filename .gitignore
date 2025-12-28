@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+
+# OCR generated folders
+output/
+data/trial/
+
+# Images
+*.jpg
+*.jpeg
+*.png
+
+# PDFs
+*.pdf
+
+# Environment
+.env
+
