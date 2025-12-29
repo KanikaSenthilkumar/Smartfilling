@@ -1,0 +1,26 @@
+# Ignore virtual environment
+env/
+venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE files
+.vscode/
+.idea/
+# Python
+env/
+ocrenv/
+venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+
+# Cache & logs
+.cache/
+*.log
