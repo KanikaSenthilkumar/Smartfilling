@@ -1,0 +1,43 @@
+{
+  "Student_Name": "Ravi Kumar",
+  "Student_Father_Name": "Suresh Kumar",
+  "Student_DOB": "12-08-2004",
+  "Student_Age": "20",
+  "Student_Gender": "Male",
+  "Student_Religion": "Hindu",
+  "Student_Community": "BC",
+  "Student_Caste": "Vanniyar",
+  "Student_District": "Salem",
+  "Annual Family Income": "180000",
+  "Student_AadharNo": "123412341234",
+  "Student_MailID": "ravi@gmail.com",
+  "Student_MobileNo": "9876543210",
+  "Student_PermanentAddress": "Salem, Tamil Nadu - 636001",
+
+  "Student_GS": true,
+  "Student_Scholarship": false,
+
+  "Institution_Name": "NIT Trichy",
+  "Institution_MailID": "office@nitt.edu",
+  "Institution_Website": "https://nitt.edu",
+
+  "Course_Name": "B.Tech",
+  "Course_Duration": "4 Years",
+  "Course_Type": "Full time",
+  "Current_Batch": "II",
+
+  "Hosteller": true,
+  "Paid/Free": "Paid",
+
+  "Account Holder Name": "Ravi Kumar",
+  "Bank_Name": "SBI",
+  "Branch_Name": "Salem",
+  "Student_Bank_Account": "12345678901",
+  "IFSC code": "SBIN0001234",
+
+  "Birth_Certificate": true,
+  "Community_Certificate": true,
+  "Nativity_Certificate": true,
+  "Income_Certificate": true,
+  "Aadhar_copy": true
+}

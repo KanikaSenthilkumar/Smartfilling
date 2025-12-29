@@ -1,0 +1,115 @@
+{
+  "fields": {
+    "name": {
+      "pdf_field": "Student_Name"
+    },
+    "father_name": {
+      "pdf_field": "Student_Father_Name"
+    },
+    "dob": {
+      "pdf_field": "Student_DOB"
+    },
+    "age": {
+      "pdf_field": "Student_Age"
+    },
+    "gender": {
+      "pdf_field": "Student_Gender"
+    },
+    "religion": {
+      "pdf_field": "Student_Religion"
+    },
+    "community": {
+      "pdf_field": "Student_Community"
+    },
+    "caste": {
+      "pdf_field": "Student_Caste"
+    },
+    "district": {
+      "pdf_field": "Student_District"
+    },
+    "income": {
+      "pdf_field": "Annual Family Income"
+    },
+    "aadhaar": {
+      "pdf_field": "Student_AadharNo"
+    },
+    "email": {
+      "pdf_field": "Student_MailID"
+    },
+    "mobile": {
+      "pdf_field": "Student_MobileNo"
+    },
+    "address": {
+      "pdf_field": "Student_PermanentAddress"
+    },
+
+    "govt_school": {
+      "pdf_field": "Student_GS"
+    },
+    "received_scholarship": {
+      "pdf_field": "Student_Scholarship"
+    },
+
+    "institution_name": {
+      "pdf_field": "Institution_Name"
+    },
+    "institution_email": {
+      "pdf_field": "Institution_MailID"
+    },
+    "institution_website": {
+      "pdf_field": "Institution_Website"
+    },
+
+    "course_name": {
+      "pdf_field": "Course_Name"
+    },
+    "course_duration": {
+      "pdf_field": "Course_Duration"
+    },
+    "course_type": {
+      "pdf_field": "Course_Type"
+    },
+    "current_year": {
+      "pdf_field": "Current_Batch"
+    },
+
+    "hosteller": {
+      "pdf_field": "Hosteller"
+    },
+    "paid_free": {
+      "pdf_field": "Paid/Free"
+    },
+
+    "bank_holder": {
+      "pdf_field": "Account Holder Name"
+    },
+    "bank_name": {
+      "pdf_field": "Bank_Name"
+    },
+    "branch_name": {
+      "pdf_field": "Branch_Name"
+    },
+    "account_no": {
+      "pdf_field": "Student_Bank_Account"
+    },
+    "ifsc": {
+      "pdf_field": "IFSC code"
+    },
+
+    "birth_certificate": {
+      "pdf_field": "Birth_Certificate"
+    },
+    "community_certificate": {
+      "pdf_field": "Community_Certificate"
+    },
+    "nativity_certificate": {
+      "pdf_field": "Nativity_Certificate"
+    },
+    "income_certificate": {
+      "pdf_field": "Income_Certificate"
+    },
+    "aadhaar_copy": {
+      "pdf_field": "Aadhar_copy"
+    }
+  }
+}
