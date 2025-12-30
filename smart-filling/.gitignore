@@ -1,0 +1,33 @@
+
+# Ignore virtual environment
+env/
+venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE files
+.vscode/
+.idea/
+# Python
+__pycache__/
+*.pyc
+
+# OCR generated folders
+output/
+data/trial/
+
+# Images
+*.jpg
+*.jpeg
+*.png
+
+# PDFs
+*.pdf
+
+# Environment
+.env
+ 

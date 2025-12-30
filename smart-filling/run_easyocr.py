@@ -1,173 +1,148 @@
 import easyocr
-import cv2
-import os
-import re
+import ollama
 import json
+import re
+import os
+from datetime import datetime
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-output_dir = os.path.join(BASE_DIR, "output")
-os.makedirs(output_dir, exist_ok=True)
+class UniversalIndianExtractor:
+    def __init__(self):
+        # Removed 'pa' (Punjabi) as it is currently not supported by EasyOCR models
+        # Supported: English, Hindi, Tamil, Telugu, Bengali, Marathi, Kannada
+        print("Initializing Multilingual OCR (En, Hi, Ta, Te, Bn, Mr, Kn)...")
+        try:
+            self.reader = easyocr.Reader(['en', 'hi', 'ta', 'te', 'bn', 'mr', 'kn'])
+        except Exception as e:
+            print(f"Error initializing OCR: {e}")
+            # Fallback to English only if multilingual fails
+            self.reader = easyocr.Reader(['en'])
+        
+        if not os.path.exists('output'):
+            os.makedirs('output')
 
+    def extract_json_from_text(self, text):
+        """Finds and parses the JSON block within the AI response."""
+        try:
+            start_idx = text.find('{')
+            end_idx = text.rfind('}')
+            if start_idx == -1 or end_idx == -1: return None
+            json_str = text[start_idx:end_idx + 1]
+            return json.loads(json_str)
+        except Exception as e:
+            print(f"JSON Parsing Error: {e}")
+            return None
 
-reader = easyocr.Reader(['en'], gpu=False)
+    def clean_id_logic(self, value):
+        """Standardizes IDs: removes spaces, symbols, and fixes O to 0."""
+        if not value: return ""
+        # Convert to string, uppercase, remove spaces, change letter O to number 0
+        val = str(value).upper().replace(" ", "").replace("O", "0")
+        return val
 
-def process_image(image_path):
-    # Check if file exists
-    if not os.path.exists(image_path):
-        raise FileNotFoundError(f"Image not found at path: {image_path}")
+    def post_process_data(self, data):
+        """Applies strict validation for Indian document formats."""
+        doc_type = data.get("DocumentType", "").upper()
+        
+        # 1. AADHAAR CARD (Strict 12 digits)
+        if "AADHAAR" in doc_type or "ADHAR" in doc_type:
+            raw_val = self.clean_id_logic(data.get("AadhaarNo", data.get("ID_Number", "")))
+            clean_digits = re.sub(r'[^0-9]', '', raw_val)
+            
+            # If AI merged Aadhaar (12) + VID (16) = 28 digits
+            if len(clean_digits) >= 28:
+                data["AadhaarNo"] = clean_digits[:12]
+                data["VID"] = clean_digits[12:28]
+            else:
+                data["AadhaarNo"] = clean_digits[:12] # Keep first 12 digits only
 
-    img = cv2.imread(image_path)
+        # 2. PAN CARD (10 Chars: 5 Letters, 4 Digits, 1 Letter)
+        elif "PAN" in doc_type:
+            raw_val = self.clean_id_logic(data.get("PAN_Number", data.get("ID_Number", "")))
+            clean_pan = "".join(re.findall(r'[A-Z0-9]', raw_val))
+            data["PAN_Number"] = clean_pan[:10]
 
-    if img is None:
-        raise ValueError("Image exists but OpenCV cannot read it. Check format.")
+        # 3. VOTER ID (EPIC Number - 10 Chars)
+        elif "VOTER" in doc_type:
+            raw_val = self.clean_id_logic(data.get("EPIC_Number", data.get("ID_Number", "")))
+            data["EPIC_Number"] = "".join(re.findall(r'[A-Z0-9]', raw_val))[:10]
 
-    results = reader.readtext(img)
-    return [text for (_, text, _) in results]
+        # 4. RATION CARD
+        elif "RATION" in doc_type:
+            raw_val = self.clean_id_logic(data.get("RationCardNo", data.get("ID_Number", "")))
+            data["RationCardNo"] = re.sub(r'[^A-Z0-9]', '', raw_val)
 
-def extract_aadhaar_fields(text_lines):
-    import re
+        # 5. BIRTH CERTIFICATE
+        elif "BIRTH" in doc_type:
+            reg_no = str(data.get("RegistrationNo", ""))
+            data["RegistrationNo"] = re.sub(r'[^A-Z0-9/]', '', reg_no.upper())
 
-    data = {
-        "name": None,
-        "dob": None,
-        "gender": None,
-        "aadhaar_number": None,
-        "address": None,
-        "phone_number": None
-    }
+        return data
 
-    cleaned = [line.strip() for line in text_lines if len(line.strip()) > 2]
+    def process_image(self, image_path):
+        if not os.path.exists(image_path):
+            print(f"Error: File '{image_path}' not found.")
+            return
 
-    ignore_words = [
-        "GOVERNMENT", "INDIA", "UNIQUE", "IDENTIFICATION",
-        "AUTHORITY", "DOB", "MALE", "FEMALE", "VID",
-        "ENROLMENT", "SIGNATURE", "AADHAAR", "S/O", "D/O", "W/O"
-    ]
-# ---------------- Aadhaar Number (FIXED) ----------------
-    for i, line in enumerate(cleaned):
-        upper = line.upper()
+        # STEP 1: OCR Extraction
+        print(f"\n--- Scanning: {os.path.basename(image_path)} ---")
+        results = self.reader.readtext(image_path, detail=0)
+        raw_text = " ".join(results)
+        
+        if not raw_text.strip():
+            print("No text detected in image.")
+            return
 
-        # Skip VID lines
-        if "VID" in upper:
-            continue
+        # STEP 2: Llama 3 Processing
+        print("Analyzing with Llama 3...")
+        system_msg = (
+            "You are an Indian Document Parser. Extract data into JSON.\n"
+            "1. Detect 'DocumentType' (Aadhaar, PAN, VoterID, RationCard, BirthCertificate).\n"
+            "2. Extract Name, DOB, Gender, ID Numbers, and Address.\n"
+            "3. If text is in Hindi/Tamil/etc., use English for JSON keys, but keep values in original script.\n"
+            "4. IMPORTANT: If Aadhaar is 12 digits and VID is 16 digits, keep them separate.\n"
+            "5. Return ONLY valid JSON."
+        )
 
-        # Aadhaar pattern
-        match = re.search(r"\b\d{4}\s\d{4}\s\d{4}\b", line)
-        if match:
-            # Prefer Aadhaar mentioned near keyword
-            if "AADHAAR" in upper or "AADHAAR NO" in upper:
-                data["aadhaar_number"] = match.group()
-                break
+        try:
+            response = ollama.generate(
+                model='llama3',
+                prompt=f"OCR Text: {raw_text}",
+                format='json',
+                system=system_msg
+            )
+            
+            data = self.extract_json_from_text(response['response'])
+            
+            if data:
+                # STEP 3: Validate and Format
+                data = self.post_process_data(data)
+                
+                # STEP 4: Save to File
+                ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+                label = data.get("DocumentType", "Unknown").replace(" ", "_")
+                save_path = f"output/{label}_{ts}.json"
+                
+                with open(save_path, "w", encoding="utf-8") as f:
+                    # ensure_ascii=False ensures Hindi/Tamil text is saved correctly
+                    json.dump(data, f, indent=4, ensure_ascii=False)
+                
+                print(f"SUCCESS: Data saved to {save_path}")
+                return data
+            else:
+                print("Failed to structure data from AI response.")
 
-            # Otherwise pick first valid Aadhaar
-            if data["aadhaar_number"] is None:
-                data["aadhaar_number"] = match.group()
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
 
-
-    # -------- DOB --------
-    for line in cleaned:
-        dob_match = re.search(r"\b\d{2}/\d{2}/\d{4}\b", line)
-        if dob_match:
-            data["dob"] = dob_match.group()
-
-    # -------- Gender --------
-    for line in cleaned:
-        upper = line.upper()
-        if "MALE" in upper:
-            data["gender"] = "Male"
-        elif "FEMALE" in upper:
-            data["gender"] = "Female"
-
-    # -------- Name (SMART LOGIC) --------
-    for i, line in enumerate(cleaned):
-        upper = line.upper()
-
-        # skip unwanted lines
-        if any(word in upper for word in ignore_words):
-            continue
-
-        # alphabet-only names
-        if line.replace(" ", "").isalpha():
-            words = line.split()
-            if 1 <= len(words) <= 4:
-                # name usually appears before DOB
-                if i + 1 < len(cleaned) and "DOB" in cleaned[i + 1].upper():
-                    data["name"] = line
-                    break
-
-                # or standalone name
-                if data["name"] is None:
-                    data["name"] = line
-    # ---------------- ADDRESS EXTRACTION (NAME → PIN BASED) ----------------
-    address_lines = []
-    name_index = -1
-
-    # find name index
-    for i, line in enumerate(cleaned):
-        if line.strip().lower() == data["name"].lower():
-            name_index = i
-            break
-
-    # collect address after name until PIN
-    if name_index != -1:
-        for line in cleaned[name_index + 1:]:
-            # skip relations
-            if re.search(r"\bS/O\b|\bD/O\b|\bW/O\b", line, re.I):
-                address_lines.append(line)
-                continue
-
-            address_lines.append(line)
-
-            # stop at PIN
-            if re.search(r"\b\d{6}\b", line):
-                break
-
-    # clean noise
-    address_lines = [
-        l for l in address_lines
-        if not re.search(r"signature|aadhaar|vid|government", l, re.I)
-    ]
-
-    if address_lines:
-        data["address"] = ", ".join(address_lines)
-
-    # ---------------- PHONE NUMBER EXTRACTION ----------------
-    for line in cleaned:
-        phone_match = re.search(r"\b[6-9]\d{9}\b", line)
-        if phone_match:
-            data["phone_number"] = phone_match.group()
-            break
-
-    return data
-
+# --- MAIN RUN ---
 if __name__ == "__main__":
-
-    image_path = "data/trial/eg_aadhar_malli_page-0001.jpg"
-
-    print("📷 Reading image from:", image_path)
-    print("📂 Exists?", os.path.exists(image_path))
-
-    extracted_text = process_image(image_path)
-
-    print("\n--- OCR TEXT ---")
-    for line in extracted_text:
-        print(line)
-
-    structured = extract_aadhaar_fields(extracted_text)
-
-    print("\n--- STRUCTURED DATA ---")
-    print(structured)
-
-    # -------- SAVE RAW OCR TEXT --------
-    ocr_path = os.path.join(output_dir, "ocr_raw.json")
-    with open(ocr_path, "w", encoding="utf-8") as f:
-        json.dump(extracted_text, f, indent=4, ensure_ascii=False)
-
-    # -------- SAVE STRUCTURED AADHAAR DATA --------
-    structured_path = os.path.join(output_dir, "aadhaar_structured.json")
-    with open(structured_path, "w", encoding="utf-8") as f:
-        json.dump(structured, f, indent=4, ensure_ascii=False)
-
-    print("\n💾 Files saved successfully:")
-    print(" -", ocr_path)
-    print(" -", structured_path)
+    extractor = UniversalIndianExtractor()
+    
+    # Update the path below to your image file
+    my_document = "data/eg_aadhar_malli_page-0001.jpg" 
+    
+    final_data = extractor.process_image(my_document)
+    
+    if final_data:
+        print("\nFinal Extracted JSON:")
+        print(json.dumps(final_data, indent=4, ensure_ascii=False))
