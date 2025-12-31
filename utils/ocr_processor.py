@@ -7,18 +7,15 @@ from datetime import datetime
 
 class UniversalIndianExtractor:
     def __init__(self):
-        # Removed 'pa' (Punjabi) as it is currently not supported by EasyOCR models
-        # Supported: English, Hindi, Tamil, Telugu, Bengali, Marathi, Kannada
-        print("Initializing Multilingual OCR (En, Hi, Ta, Te, Bn, Mr, Kn)...")
+        print("Initializing OCR (English only)...")
         try:
-            self.reader = easyocr.Reader(['en', 'hi', 'ta', 'te', 'bn', 'mr', 'kn'])
+            self.reader = easyocr.Reader(['en'])
         except Exception as e:
             print(f"Error initializing OCR: {e}")
-            # Fallback to English only if multilingual fails
-            self.reader = easyocr.Reader(['en'])
-        
-        if not os.path.exists('output'):
-            os.makedirs('output')
+            raise
+
+        if not os.path.exists('data/output'):
+            os.makedirs('data/output')
 
     def extract_json_from_text(self, text):
         """Finds and parses the JSON block within the AI response."""
@@ -42,12 +39,12 @@ class UniversalIndianExtractor:
     def post_process_data(self, data):
         """Applies strict validation for Indian document formats."""
         doc_type = data.get("DocumentType", "").upper()
-        
+
         # 1. AADHAAR CARD (Strict 12 digits)
         if "AADHAAR" in doc_type or "ADHAR" in doc_type:
             raw_val = self.clean_id_logic(data.get("AadhaarNo", data.get("ID_Number", "")))
             clean_digits = re.sub(r'[^0-9]', '', raw_val)
-            
+
             # If AI merged Aadhaar (12) + VID (16) = 28 digits
             if len(clean_digits) >= 28:
                 data["AadhaarNo"] = clean_digits[:12]
@@ -87,7 +84,7 @@ class UniversalIndianExtractor:
         print(f"\n--- Scanning: {os.path.basename(image_path)} ---")
         results = self.reader.readtext(image_path, detail=0)
         raw_text = " ".join(results)
-        
+
         if not raw_text.strip():
             print("No text detected in image.")
             return
@@ -105,27 +102,27 @@ class UniversalIndianExtractor:
 
         try:
             response = ollama.generate(
-                model='llama3',
+                model='llama3.2:1b',
                 prompt=f"OCR Text: {raw_text}",
                 format='json',
                 system=system_msg
             )
-            
+
             data = self.extract_json_from_text(response['response'])
-            
+
             if data:
                 # STEP 3: Validate and Format
                 data = self.post_process_data(data)
-                
+
                 # STEP 4: Save to File
                 ts = datetime.now().strftime("%Y%m%d_%H%M%S")
                 label = data.get("DocumentType", "Unknown").replace(" ", "_")
-                save_path = f"output/{label}_{ts}.json"
-                
+                save_path = f"data/output/{label}_{ts}.json"
+
                 with open(save_path, "w", encoding="utf-8") as f:
                     # ensure_ascii=False ensures Hindi/Tamil text is saved correctly
                     json.dump(data, f, indent=4, ensure_ascii=False)
-                
+
                 print(f"SUCCESS: Data saved to {save_path}")
                 return data
             else:
@@ -143,12 +140,12 @@ def process_image(image_path):
 # --- MAIN RUN ---
 if __name__ == "__main__":
     extractor = UniversalIndianExtractor()
-    
+
     # Update the path below to your image file
-    my_document = "data/eg_aadhar_malli_page-0001.jpg" 
-    
+    my_document = "data/eg_aadhar_malli_page-0001.jpg"
+
     final_data = extractor.process_image(my_document)
-    
+
     if final_data:
         print("\nFinal Extracted JSON:")
         print(json.dumps(final_data, indent=4, ensure_ascii=False))
