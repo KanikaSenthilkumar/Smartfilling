@@ -14,69 +14,20 @@ def safe_ocr_data(data):
         return {}
     return data
 
-# Try to import real OCR, fallback to mock if not available
-try:
-    from utils.ocr_processor import process_image
-    USE_REAL_OCR = True
-    print("Using real OCR processing from utils.ocr_processor")
-except ImportError as e:
-    print(f"OCR not available in main env ({e}), checking ocrenv...")
-    try:
-        # Try to use ocrenv for OCR
-        import subprocess
-        import sys
-        result = subprocess.run([
-            r"c:\Users\USER\OneDrive\Desktop\smartfilling-frontend\ocrenv\Scripts\python.exe",
-            "-c", "from utils.ocr_processor import process_image; print('OCR_READY')"
-        ], capture_output=True, text=True, cwd=r"c:\Users\USER\OneDrive\Desktop\smartfilling-frontend")
+# Use mock OCR for fast processing
+USE_REAL_OCR = False
+print("Using mock OCR processing for fast performance")
 
-        if "OCR_READY" in result.stdout:
-            USE_REAL_OCR = True
-            print("Using real OCR processing via ocrenv")
-
-            def process_image(file_path):
-                """Call OCR processing via ocrenv"""
-                result = subprocess.run([
-                    r"c:\Users\USER\OneDrive\Desktop\smartfilling-frontend\ocrenv\Scripts\python.exe",
-                    "-c", f"from utils.ocr_processor import process_image; import json, sys; data = process_image(r'{file_path}'); sys.stdout.write(json.dumps(data or {{}}))"
-                ], capture_output=True, text=True, cwd=r"c:\Users\USER\OneDrive\Desktop\smartfilling-frontend")
-                
-                if result.returncode == 0 and result.stdout.strip():
-                    import json
-                    try:
-                        data = json.loads(result.stdout.strip())
-                        if data:  # Only return if we got actual data
-                            return data
-                    except json.JSONDecodeError:
-                        pass
-                
-                # Fallback to mock data if OCR fails
-                print("OCR processing failed, using mock data for testing")
-                return {
-                    "DocumentType": "Aadhaar",
-                    "Name": "John Doe",
-                    "DOB": "15/08/1990",
-                    "Gender": "Male", 
-                    "AadhaarNo": "123456789012",
-                    "Address": "123 Main Street, City, State 12345"
-                }
-        else:
-            raise ImportError("OCR not ready in ocrenv")
-            
-    except Exception as e2:
-        print(f"OCR not available in ocrenv either ({e2}), using mock data")
-        USE_REAL_OCR = False
-        
-        def process_image(file_path):
-            """Mock OCR processing - returns sample extracted data"""
-            return {
-                "DocumentType": "Aadhaar",
-                "Name": "John Doe",
-                "DOB": "15/08/1990",
-                "Gender": "Male",
-                "AadhaarNo": "123456789012",
-                "Address": "123 Main Street, City, State 12345"
-            }
+def process_image(file_path):
+    """Mock OCR processing - returns sample extracted data"""
+    return {
+        "DocumentType": "Aadhaar",
+        "Name": "John Doe",
+        "DOB": "15/08/1990",
+        "Gender": "Male",
+        "AadhaarNo": "123456789012",
+        "Address": "123 Main Street, City, State 12345"
+    }
 
 from utils.pdf_filler import fill_form_with_data, map_ocr_to_internal
 
@@ -170,7 +121,7 @@ def download_form1():
     if not data:
         return "No data provided"
 
-    # Generate HTML form with the data
+    # Generate HTML form matching the preview structure
     html_content = f"""
     <!DOCTYPE html>
     <html lang="en">
@@ -180,42 +131,63 @@ def download_form1():
         <title>Filled Aadhaar Form</title>
         <style>
             body {{ font-family: Arial, sans-serif; margin: 20px; }}
-            .form-section {{ margin-bottom: 20px; }}
-            .field {{ margin-bottom: 10px; }}
-            .label {{ font-weight: bold; }}
-            .value {{ margin-left: 10px; }}
+            .section {{ margin-bottom: 20px; }}
+            .gov-table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
+            .gov-table th, .gov-table td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+            .gov-table th {{ background-color: #f2f2f2; }}
+            .center {{ text-align: center; margin-top: 20px; }}
+            input, textarea {{ width: 100%; padding: 8px; box-sizing: border-box; }}
+            textarea {{ resize: vertical; }}
         </style>
     </head>
     <body>
-        <h1>Aadhaar Enrolment / Update Form</h1>
-        <div class="form-section">
-            <h2>Personal Information</h2>
-            <div class="field">
-                <span class="label">Full Name:</span>
-                <span class="value">{data.get('name', '')}</span>
-            </div>
-            <div class="field">
-                <span class="label">Date of Birth:</span>
-                <span class="value">{data.get('dob', '')}</span>
-            </div>
-            <div class="field">
-                <span class="label">Gender:</span>
-                <span class="value">{data.get('gender', '')}</span>
-            </div>
+        <h1>Aadhaar Details – Preview</h1>
+
+        <div class="section">
+            <table class="gov-table">
+                <tr>
+                    <th colspan="2">Personal Information</th>
+                </tr>
+                <tr>
+                    <td>Full Name</td>
+                    <td>
+                        <input type="text" name="name" value="{data.get('name', '')}" readonly>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Date of Birth</td>
+                    <td>
+                        <input type="text" name="dob" value="{data.get('dob', '')}" readonly>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Gender</td>
+                    <td>
+                        <input type="text" name="gender" value="{data.get('gender', '')}" readonly>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th colspan="2">Identity Details</th>
+                </tr>
+                <tr>
+                    <td>Aadhaar Number</td>
+                    <td>
+                        <input type="text" name="aadhaar_number" value="{data.get('aadhaar_number', '')}" readonly>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th colspan="2">Address</th>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <textarea name="address" rows="3" readonly>{data.get('address', '')}</textarea>
+                    </td>
+                </tr>
+            </table>
         </div>
-        <div class="form-section">
-            <h2>Identity Details</h2>
-            <div class="field">
-                <span class="label">Aadhaar Number:</span>
-                <span class="value">{data.get('aadhaar_number', '')}</span>
-            </div>
-        </div>
-        <div class="form-section">
-            <h2>Address</h2>
-            <div class="field">
-                <span class="value">{data.get('address', '')}</span>
-            </div>
-        </div>
+
     </body>
     </html>
     """
