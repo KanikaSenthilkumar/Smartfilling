@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, send_file, session
 import os
+import tempfile
 
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib.pagesizes import A4
@@ -169,13 +170,63 @@ def download_form1():
     if not data:
         return "No data provided"
 
-    # Generate filled PDF with updated data
-    filled_pdf_path = fill_form_with_data("aadhaar_form", data)
-    
-    if filled_pdf_path:
-        return send_file(filled_pdf_path, as_attachment=True, download_name="filled_aadhaar_form1.pdf")
-    else:
-        return "Error generating filled form"
+    # Generate HTML form with the data
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Filled Aadhaar Form</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; margin: 20px; }}
+            .form-section {{ margin-bottom: 20px; }}
+            .field {{ margin-bottom: 10px; }}
+            .label {{ font-weight: bold; }}
+            .value {{ margin-left: 10px; }}
+        </style>
+    </head>
+    <body>
+        <h1>Aadhaar Enrolment / Update Form</h1>
+        <div class="form-section">
+            <h2>Personal Information</h2>
+            <div class="field">
+                <span class="label">Full Name:</span>
+                <span class="value">{data.get('name', '')}</span>
+            </div>
+            <div class="field">
+                <span class="label">Date of Birth:</span>
+                <span class="value">{data.get('dob', '')}</span>
+            </div>
+            <div class="field">
+                <span class="label">Gender:</span>
+                <span class="value">{data.get('gender', '')}</span>
+            </div>
+        </div>
+        <div class="form-section">
+            <h2>Identity Details</h2>
+            <div class="field">
+                <span class="label">Aadhaar Number:</span>
+                <span class="value">{data.get('aadhaar_number', '')}</span>
+            </div>
+        </div>
+        <div class="form-section">
+            <h2>Address</h2>
+            <div class="field">
+                <span class="value">{data.get('address', '')}</span>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
+    # Create a temporary HTML file
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False) as f:
+        f.write(html_content)
+        temp_file_path = f.name
+
+    # Send the HTML file for download
+    return send_file(temp_file_path, as_attachment=True, download_name="filled_aadhaar_form.html")
 
 @app.route("/form2")
 def form2():
@@ -216,7 +267,9 @@ def process_form2():
     # Generate filled PDF
     pdf_dir = os.path.join(app.root_path, "static/filled_pdfs")
     os.makedirs(pdf_dir, exist_ok=True)
-    filled_pdf_path = fill_form_with_data("aadhaar_form", internal_data,output_dir=pdf_dir)
+    print(f"PDF dir: {pdf_dir}")
+    filled_pdf_path = fill_form_with_data("aadhaar_form", internal_data, output_dir=pdf_dir)
+    print(f"Filled PDF path: {filled_pdf_path}")
     
     if filled_pdf_path:
         # Store PDF path in session for serving
@@ -250,9 +303,18 @@ def preview_form1_pdf():
         return "No PDF available", 404
 
     return send_file(pdf_path, mimetype="application/pdf")
+
+
+@app.route("/preview_form2_pdf")
+def preview_form2_pdf():
+    """Serve the filled PDF for Form 2 preview"""
+    pdf_path = session.get("form2_pdf_path")
+    if not pdf_path or not os.path.exists(pdf_path):
+        return "No PDF available", 404
+
+    return send_file(pdf_path, mimetype="application/pdf")
+
+
 if __name__ == "__main__":
     app.run(debug=True)
-
-
-    
 
