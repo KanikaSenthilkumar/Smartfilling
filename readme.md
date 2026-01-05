@@ -6,12 +6,19 @@
 
 **🚀 Features**
     📄 Upload documents (PDF / Image)
+    
     🔍 OCR-based text extraction
+    
     🧠 AI-assisted field identification
+    
     🪪 Aadhaar, Birth Certificate & Ration Card support
+    
     ✍️ Automatic form field mapping
+    
     📤 Generate filled forms (PDF)
+    
     🌐 Web-based interface (Flask)
+    
     🗂️ Modular backend design
 
 **🛠️ Tech Stack**
