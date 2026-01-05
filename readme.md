@@ -1,51 +1,88 @@
-**🧠 Smartfilling – AI-Powered Form Filling Assistant**
+🧠 Smartfilling – AI-Powered Form Filling Assistant
 
-  --> Smartfilling is an AI-powered intelligent form-filling system designed to automate the extraction of user details from Indian citizen documents (like Aadhaar, Birth Certificate, Ration Card) and populate government/service forms accurately and efficiently.
-  
-  --> The project focuses on OCR + NLP + Rule-based mapping to reduce manual data entry, errors, and processing time.
+Smartfilling is an AI-powered intelligent form-filling system designed to automate the extraction of user details from Indian citizen documents (like Aadhaar, Birth Certificate, Ration Card) and populate government/service forms accurately and efficiently.
 
-**🚀 Features**
-    📄 Upload documents (PDF / Image)
-    
-    🔍 OCR-based text extraction
-    
-    🧠 AI-assisted field identification
-    
-    🪪 Aadhaar, Birth Certificate & Ration Card support
-    
-    ✍️ Automatic form field mapping
-    
-    📤 Generate filled forms (PDF)
-    
-    🌐 Web-based interface (Flask)
-    
-    🗂️ Modular backend design
+The project focuses on OCR + NLP + Rule-based mapping to reduce manual data entry, errors, and processing time.
 
-**🛠️ Tech Stack**
-  
-  * Python 3.10+
-  * Flask – Web framework
-  * OCR – Tesseract / PDF OCR
-  * pdfrw / reportlab – PDF handling
-  * Regex + NLP logic
-  * HTML / CSS – Frontend
+🚀 Features
+
+📄 Upload documents (PDF / Image)
+
+🔍 OCR-based text extraction
+
+🧠 AI-assisted field identification
+
+🪪 Aadhaar, Birth Certificate & Ration Card support
+
+✍️ Automatic form field mapping
+
+📤 Generate filled forms (PDF)
+
+🌐 Web-based interface (Flask)
+
+🗂️ Modular backend design
+
+🏗️ Project Architecture
+Smartfilling/
+│
+├── app.py                  # Main Flask application
+├── backend/
+│   ├── ocr.py               # OCR logic (text extraction)
+│   ├── llm.py               # Field extraction & mapping logic
+│
+├── templates/
+│   ├── index.html           # Upload & UI page
+│
+├── static/
+│   ├── output/              # Generated filled forms (ignored in git)
+│
+├── env/                     # Virtual environment (ignored)
+├── requirements.txt
+├── .gitignore
+└── README.md
+
+🛠️ Tech Stack
+
+Python 3.10+
+
+Flask – Web framework
+
+OCR – Tesseract / PDF OCR
+
+pdfrw / reportlab – PDF handling
+
+Regex + NLP logic
+
+HTML / CSS – Frontend
 
 📑 Supported Documents & Extracted Fields
-    🪪 Aadhaar Card
-        Name
-        Date of Birth
-        Gender
-        Address
-        Aadhaar Number
-    🧾 Birth Certificate
-        Name
-        Date of Birth
-        Gender
-    🏠 Ration Card
-        Head of Family (HOF)
-        Address
+🪪 Aadhaar Card
 
-**⚙️ Installation & Setup**
+Name
+
+Date of Birth
+
+Gender
+
+Address
+
+Aadhaar Number
+
+🧾 Birth Certificate
+
+Name
+
+Date of Birth
+
+Gender
+
+🏠 Ration Card
+
+Head of Family (HOF)
+
+Address
+
+⚙️ Installation & Setup
 1️⃣ Clone the Repository
 git clone https://github.com/KanikaSenthilkumar/Smartfilling.git
 cd Smartfilling
@@ -60,32 +97,48 @@ pip install -r requirements.txt
 4️⃣ Run the Application
 python app.py
 
-**Open browser:**
- ,http://127.0.0.1:5000
 
-**🧪 Example Workflow**
-  Upload document (PDF/Image)
-  OCR extracts raw text
-  AI logic identifies required fields
-  Fields mapped to form structure
-  Final filled PDF generated
-  User reviews & downloads
+Open browser:
 
-**🔒 Security & Privacy**
-  No data stored permanently
-  Files processed locally
-  Output folder excluded from Git
-  Designed with citizen data safety in mind
+http://127.0.0.1:5000
 
-**📈 Future Enhancements**
+🧪 Example Workflow
+
+Upload document (PDF/Image)
+
+OCR extracts raw text
+
+AI logic identifies required fields
+
+Fields mapped to form structure
+
+Final filled PDF generated
+
+User reviews & downloads
+
+🔒 Security & Privacy
+
+No data stored permanently
+
+Files processed locally
+
+Output folder excluded from Git
+
+Designed with citizen data safety in mind
+
+📈 Future Enhancements
 
 ✅ Multi-language OCR (Tamil / Hindi)
-✅ Face verification
-✅ Database integration
-✅ API-based form submission
-✅ Government form templates
-✅ User authentication
 
+✅ Face verification
+
+✅ Database integration
+
+✅ API-based form submission
+
+✅ Government form templates
+
+✅ User authentication
 **👥 Collaborators**
 
 This project is a collaborative effort with clearly defined responsibilities:
