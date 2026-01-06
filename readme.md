@@ -1,6 +1,7 @@
 **🧠 Smartfilling – AI-Powered Form Filling Assistant**
 
-     --> Smartfilling is an AI-powered intelligent form-filling system designed to automate the extraction of user details from Indian citizen documents (like Aadhaar, Birth Certificate, Ration Card) and populate government/service forms accurately and efficiently.
+     --> Smartfilling is an AI-powered intelligent form-filling system designed to automate the extraction of user details 
+     from Indian citizen documents (like Aadhaar, Birth Certificate, Ration Card) and populate government/service forms accurately and efficiently.
 
      --> The project focuses on OCR + NLP + Rule-based mapping to reduce manual data entry, errors, and processing time.
 
@@ -38,6 +39,7 @@
      HTML / CSS – Frontend
 
 **📑 Supported Documents & Extracted Fields**
+
 _🪪 Aadhaar Card_
 
      Name
@@ -127,23 +129,34 @@ _🏠 Ration Card_
 
 This project is a collaborative effort with clearly defined responsibilities:
 
-***Kanika***
-      * Backend development, autofill logic, and system integration
-      * Flask backend
-      * Document-to-form mapping logic
-      * End-to-end workflow integration
-
-***Malleeshwar***
-      * OCR, Regex processing, and Ollama integration
-      * Text extraction from PDFs/images
-      * Regex-based field identification
-      * Local LLM (Ollama) experimentation and support
+     ***Kanika***
+     
+           * Backend development, autofill logic, and system integration
       
-***Malini***
-      * Frontend development
-      * User interface design
-      * Upload and interaction pages
-      * UI flow for document processing
+           * Flask backend
+      
+           * Document-to-form mapping logic
+      
+           * End-to-end workflow integration
+      
+
+     ***Malleeshwar***
+           * OCR, Regex processing, and Ollama integration
+           
+           * Text extraction from PDFs/images
+      
+           * Regex-based field identification
+      
+           * Local LLM (Ollama) experimentation and support
+      
+     ***Malini***
+           * Frontend development
+     
+           * User interface design
+          
+           * Upload and interaction pages
+           
+           * UI flow for document processing
 
 **🔗 GitHub** :      https://github.com/KanikaSenthilkumar
 
