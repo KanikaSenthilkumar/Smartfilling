@@ -1,47 +1,29 @@
-🧠 Smartfilling – AI-Powered Form Filling Assistant
+**🧠 Smartfilling – AI-Powered Form Filling Assistant**
 
-Smartfilling is an AI-powered intelligent form-filling system designed to automate the extraction of user details from Indian citizen documents (like Aadhaar, Birth Certificate, Ration Card) and populate government/service forms accurately and efficiently.
+--> Smartfilling is an AI-powered intelligent form-filling system designed to automate the extraction of user details from Indian citizen documents (like Aadhaar, Birth Certificate, Ration Card) and populate government/service forms accurately and efficiently.
 
-The project focuses on OCR + NLP + Rule-based mapping to reduce manual data entry, errors, and processing time.
+--> The project focuses on OCR + NLP + Rule-based mapping to reduce manual data entry, errors, and processing time.
 
-🚀 Features
+**🚀 Features**
 
-📄 Upload documents (PDF / Image)
+     📄 Upload documents (PDF / Image)
 
-🔍 OCR-based text extraction
+     🔍 OCR-based text extraction
 
-🧠 AI-assisted field identification
+     🧠 AI-assisted field identification
 
-🪪 Aadhaar, Birth Certificate & Ration Card support
+     🪪 Aadhaar, Birth Certificate & Ration Card support
 
-✍️ Automatic form field mapping
+     ✍️ Automatic form field mapping
 
-📤 Generate filled forms (PDF)
+     📤 Generate filled forms (PDF)
 
-🌐 Web-based interface (Flask)
+     🌐 Web-based interface (Flask)
 
-🗂️ Modular backend design
+     🗂️ Modular backend design
 
-🏗️ Project Architecture
-Smartfilling/
-│
-├── app.py                  # Main Flask application
-├── backend/
-│   ├── ocr.py               # OCR logic (text extraction)
-│   ├── llm.py               # Field extraction & mapping logic
-│
-├── templates/
-│   ├── index.html           # Upload & UI page
-│
-├── static/
-│   ├── output/              # Generated filled forms (ignored in git)
-│
-├── env/                     # Virtual environment (ignored)
-├── requirements.txt
-├── .gitignore
-└── README.md
 
-🛠️ Tech Stack
+**🛠️ Tech Stack**
 
 Python 3.10+
 
@@ -55,54 +37,54 @@ Regex + NLP logic
 
 HTML / CSS – Frontend
 
-📑 Supported Documents & Extracted Fields
-🪪 Aadhaar Card
+**📑 Supported Documents & Extracted Fields**
+_🪪 Aadhaar Card_
 
-Name
+     Name
 
-Date of Birth
+     Date of Birth
 
-Gender
+     Gender
 
-Address
+     Address
 
-Aadhaar Number
+     Aadhaar Number
 
-🧾 Birth Certificate
+_🧾 Birth Certificate_
 
-Name
+     Name
 
-Date of Birth
+     Date of Birth
 
-Gender
+     Gender
 
-🏠 Ration Card
+_🏠 Ration Card_
 
-Head of Family (HOF)
+     Head of Family (HOF)
 
-Address
+     Address
 
-⚙️ Installation & Setup
-1️⃣ Clone the Repository
+**⚙️ Installation & Setup**
+_1️⃣ Clone the Repository_
 git clone https://github.com/KanikaSenthilkumar/Smartfilling.git
 cd Smartfilling
 
-2️⃣ Create Virtual Environment
+_2️⃣ Create Virtual Environment_
 python -m venv env
 env\Scripts\activate   # Windows
 
-3️⃣ Install Dependencies
+_3️⃣ Install Dependencies_
 pip install -r requirements.txt
 
-4️⃣ Run the Application
+_4️⃣ Run the Application_
 python app.py
 
 
-Open browser:
+_Open browser:_
 
 http://127.0.0.1:5000
 
-🧪 Example Workflow
+**🧪 Example Workflow**
 
 Upload document (PDF/Image)
 
@@ -116,7 +98,7 @@ Final filled PDF generated
 
 User reviews & downloads
 
-🔒 Security & Privacy
+**🔒 Security & Privacy**
 
 No data stored permanently
 
@@ -126,7 +108,7 @@ Output folder excluded from Git
 
 Designed with citizen data safety in mind
 
-📈 Future Enhancements
+**📈 Future Enhancements**
 
 ✅ Multi-language OCR (Tamil / Hindi)
 
@@ -139,29 +121,30 @@ Designed with citizen data safety in mind
 ✅ Government form templates
 
 ✅ User authentication
-**👥 Collaborators**
+
+**👥 Contributors**
 
 This project is a collaborative effort with clearly defined responsibilities:
 
-*Kanika*
+***Kanika***
       * Backend development, autofill logic, and system integration
       * Flask backend
       * Document-to-form mapping logic
       * End-to-end workflow integration
 
-*Malleeshwar*
+***Malleeshwar***
       * OCR, Regex processing, and Ollama integration
       * Text extraction from PDFs/images
       * Regex-based field identification
       * Local LLM (Ollama) experimentation and support
       
-*Malini*
+***Malini***
       * Frontend development
       * User interface design
       * Upload and interaction pages
       * UI flow for document processing
 
-🔗 GitHub: https://github.com/KanikaSenthilkumar
+**🔗 GitHub** : https://github.com/KanikaSenthilkumar
 
 **📜 License**
 
